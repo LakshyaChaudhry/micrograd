@@ -38,6 +38,7 @@ class value:
         self._prev = set(_children)
         self._op = _op
         self._label = _label
+        self.grad = 0.0
     
     def __repr__(self):
         return self.data
@@ -57,9 +58,18 @@ c = value(10.0); c._label='c'
 e = a*b; e._label='e'
 d = e + c; d._label='d'
 
-#copy and paste visualization code from the video - uses graphviz API 
+#At this point, the forward pass is complete + the graph is visualized.
+# next is implementing backpropagation.
+
+#manual backpropogration below:
+d.grad = 1.0
+e.grad = 1.0
+c.grad = 1.0
+b.grad = 2.0
+a.grad = -3.0
 
 
+#Code for visualization of the graph is below:
 
 def trace(root):
   # builds a set of all nodes and edges in a graph
@@ -80,7 +90,7 @@ def draw_dot(root):
   for n in nodes:
     uid = str(id(n))
     # for any value in the graph, create a rectangular ('record') node for it
-    dot.node(name = uid, label = "{ %s | data %.4f }" % (n._label, n.data), shape='record')
+    dot.node(name = uid, label = "{ %s | data %.4f | grad %.4f }" % (n._label, n.data, n.grad), shape='record')
     if n._op:
       # if this value is a result of some operation, create an op node for it
       dot.node(name = uid + n._op, label = n._op)
@@ -105,5 +115,3 @@ plt.axis('off')
 plt.tight_layout()
 plt.show()
 
-#At this point, the forward pass is complete + the graph is visualized.
-# next is implementing backpropagation.
