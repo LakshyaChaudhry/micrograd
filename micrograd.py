@@ -51,22 +51,76 @@ class value:
         out = value(self.data * other.data, (self, other), _op='*')
         return out
 
+    def tanh(self):
+      n = self.data
+      t = (math.exp(2*n) - 1)/(math.exp(2*n) + 1)
+      out = value(t, (self, ), _op='tanh')
+      return out
 
-a = value(2.0); a._label='a'
-b = value(-3.0); b._label='b'
-c = value(10.0); c._label='c'
-e = a*b; e._label='e'
-d = e + c; d._label='d'
 
-#At this point, the forward pass is complete + the graph is visualized.
-# next is implementing backpropagation.
+# a = value(2.0); a._label='a'
+# b = value(-3.0); b._label='b'
+# c = value(10.0); c._label='c'
+# e = a*b; e._label='e'
+# d = e + c; d._label='d'
+
+# #At this point, the forward pass is complete + the graph is visualized.
+# # next is implementing backpropagation.
+
+# #manual backpropogration below:
+# d.grad = 1.0
+# e.grad = 1.0
+# c.grad = 1.0
+# b.grad = 2.0
+# a.grad = -3.0
+
+#implementing the neuron below: 
+x1 = value(2.0); x1._label='x1'
+x2 = value(0.0); x2._label='x2'
+w1 = value(-3.0); w1._label='w1'
+w2 = value(1.0); w2._label='w2'
+
+b = value(6.881373587019543); b._label='b' #bias value from the video
+x1w1 = x1*w1; x1w1._label='x1*w1'
+x2w2 = x2*w2; x2w2._label='x2*w2'
+x1w1x2w2 = x1w1 + x2w2; x1w1x2w2._label='x1w1 + x2w2'
+n = x1w1x2w2 + b; n._label='n'
+o = n.tanh(); o._label='o'
 
 #manual backpropogration below:
-d.grad = 1.0
-e.grad = 1.0
-c.grad = 1.0
-b.grad = 2.0
-a.grad = -3.0
+o.grad = 1.0
+n.grad = 1-(o.data**2)
+x1w1x2w2.grad = n.grad
+b.grad = n.grad
+x1w1.grad = x1w1x2w2.grad
+x2w2.grad = x1w1x2w2.grad
+x1.grad = w1.data * x1w1.grad
+w1.grad = x1.data * x1w1.grad
+w2.grad = x2.data * x2w2.grad
+x2.grad = w2.data * x2w2.grad
+
+
+#now we need to automate the backpropagation process.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #Code for visualization of the graph is below:
@@ -104,7 +158,7 @@ def draw_dot(root):
   return dot
 
 # Create and display the visualization like a matplotlib plot (extra logic added since we aren't in a notebook):
-graph = draw_dot(d)
+graph = draw_dot(o)
 from PIL import Image
 graph.format = 'png'
 graph.render('temp_graph', cleanup=True)
