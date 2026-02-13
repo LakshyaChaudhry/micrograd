@@ -38,6 +38,7 @@ class value:
         self._prev = set(_children)
         self._op = _op
         self._label = _label
+        self._backward = lambda: None
         self.grad = 0.0
     
     def __repr__(self):
@@ -45,34 +46,50 @@ class value:
 
     def __add__(self, other):
         out = value(self.data + other.data, (self, other), _op='+')
+        def _backward():
+            self.grad += 1.0 * out.grad
+            other.grad += 1.0 * out.grad
+        
+        out._backward = _backward
         return out
 
     def __mul__(self, other):
         out = value(self.data * other.data, (self, other), _op='*')
+        def _backward():
+          self.grad += other.data * out.grad
+          other.grad += self.data * out.grad
+        
+        out._backward = _backward
         return out
 
     def tanh(self):
       n = self.data
       t = (math.exp(2*n) - 1)/(math.exp(2*n) + 1)
       out = value(t, (self, ), _op='tanh')
+
+      def _backward():
+        self.grad += (1-t**2) * out.grad
+      
+      out._backward = _backward
       return out
 
+    def backwards(self):
+      topo = []
+      visited = set()
+      def build_topo(v):
+        if v not in visited:
+          visited.add(v)
+          for child in v._prev:
+            build_topo(child)
+          topo.append(v)
+      build_topo(self)
 
-# a = value(2.0); a._label='a'
-# b = value(-3.0); b._label='b'
-# c = value(10.0); c._label='c'
-# e = a*b; e._label='e'
-# d = e + c; d._label='d'
+      self.grad = 1.0
+      for node in reversed(topo):
+        node._backward()
 
-# #At this point, the forward pass is complete + the graph is visualized.
-# # next is implementing backpropagation.
 
-# #manual backpropogration below:
-# d.grad = 1.0
-# e.grad = 1.0
-# c.grad = 1.0
-# b.grad = 2.0
-# a.grad = -3.0
+
 
 #implementing the neuron below: 
 x1 = value(2.0); x1._label='x1'
@@ -87,18 +104,7 @@ x1w1x2w2 = x1w1 + x2w2; x1w1x2w2._label='x1w1 + x2w2'
 n = x1w1x2w2 + b; n._label='n'
 o = n.tanh(); o._label='o'
 
-#manual backpropogration below:
-o.grad = 1.0
-n.grad = 1-(o.data**2)
-x1w1x2w2.grad = n.grad
-b.grad = n.grad
-x1w1.grad = x1w1x2w2.grad
-x2w2.grad = x1w1x2w2.grad
-x1.grad = w1.data * x1w1.grad
-w1.grad = x1.data * x1w1.grad
-w2.grad = x2.data * x2w2.grad
-x2.grad = w2.data * x2w2.grad
-
+o.backwards()
 
 #now we need to automate the backpropagation process.
 
