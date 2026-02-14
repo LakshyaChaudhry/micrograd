@@ -1,0 +1,27 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary graph files
+temp_graph
+temp_graph.png
+computation_graph
+computation_graph.pdf
+computation_graph.svg
+
+# OS files
+.DS_Store
