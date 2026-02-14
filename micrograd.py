@@ -144,7 +144,7 @@ class MLP:
     return x
   
   def parameters(self):
-    return [p for layer in self.layers for p in layer.parameter]
+    return [p for layer in self.layers for p in layer.parameters()]
 
 n = MLP(3, [4, 4, 1])
 #example dataset:
@@ -157,11 +157,21 @@ xs = [
 ]
 
 ys = [1.0, -1.0, 0.0, 1.0]
-ypred = [n(x) for x in xs]
 
-loss = sum((yout - ygt)**2 for ygt, yout in zip(ys, ypred))
-loss.backwards()
-print(loss)
+for k in range(50):
+
+  ypred = [n(x) for x in xs]
+
+  for p in n.parameters():
+    p.grad = 0.0
+  loss = sum((yout - ygt)**2 for ygt, yout in zip(ys, ypred))
+  loss.backwards()
+
+  for p in n.parameters():
+    p.data += p.data * -0.01
+
+  print(k, loss.data)
+
 
 
 #implementing the neuron below: 
