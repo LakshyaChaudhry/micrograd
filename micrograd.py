@@ -7,30 +7,6 @@ import matplotlib.pyplot as plt
 from graphviz import Digraph # for the visualization of the graph
 
 
-def f(x):
-    return 3*x**2 - 4*x + 5 #copied function from the video
-
-xs = np.arange(-5,5,0.25)
-ys = f(xs)
-# plt.plot(xs,ys)
-# plt.show()
-
-h = 0.0001
-x = 3.0
-
-# df = (f(x + h) - f(x)) / h
-# print(df)
-
-#Now ill implement the more complex mathematical function
-
-
-# d1 = a*b + c
-# a += h
-# d2 = a*b + c
-
-# slope = (d2 - d1) / h
-# print(slope)
-
 class value:
 
     def __init__(self, data, _children=(), _op='', _label=''):
@@ -45,6 +21,7 @@ class value:
         return self.data
 
     def __add__(self, other):
+        other = other if isinstance(other, value) else value(other)
         out = value(self.data + other.data, (self, other), _op='+')
         def _backward():
             self.grad += 1.0 * out.grad
@@ -54,6 +31,7 @@ class value:
         return out
 
     def __mul__(self, other):
+        other = other if isinstance(other, value) else value(other)
         out = value(self.data * other.data, (self, other), _op='*')
         def _backward():
           self.grad += other.data * out.grad
@@ -133,11 +111,13 @@ x1w1 = x1*w1; x1w1._label='x1*w1'
 x2w2 = x2*w2; x2w2._label='x2*w2'
 x1w1x2w2 = x1w1 + x2w2; x1w1x2w2._label='x1w1 + x2w2'
 n = x1w1x2w2 + b; n._label='n'
-o = n.tanh(); o._label='o'
+e = (2*n).exp(); e._label='e'
+o = (e-1)/(e+1); o._label='o'
 
 o.backwards()
 
-#now we need to automate the backpropagation process.
+#Now we will break down and atomize the tanh function.
+
 
 
 
