@@ -23,6 +23,35 @@ p = p / p.sum()
 g = torch.Generator().manual_seed(2147483647)
 ix = torch.multinomial(p, num_samples=20, replacement=True, generator = g)
 
+ix = 0
+out = []
+P = N.float()
+P = P / P.sum(1, keepdim=True)
+while True:
+    p = P[ix]
+    p = p / p.sum()
+    ix = torch.multinomial(p, num_samples=1, replacement=True, generator = g).item()
+    if ix == 0:
+        break
+    else:
+        out.append(itos[ix])
+
+log_likelihood = 0.0
+n = 0
+for w in words:
+    chs = ['.'] + list(w) + ['.']
+    for ch1, ch2 in zip(chs, chs[1:]):
+        ix1 = stoi[ch1]
+        ix2 = stoi[ch2]
+        prob = P[ix1, ix2]
+        logprob = torch.log(prob)
+        log_likelihood += logprob
+        n += 1
+        # print(f'{ch1}{ch2} {prob:.4f}')
+
+nll = -log_likelihood
+print(f'{nll=}')
+print(f'{nll/n=}')
 
 #copied visualization code from jupyter notebook
 plt.figure(figsize=(16,16))
@@ -34,4 +63,4 @@ for i in range(27):
         plt.text(j, i, N[i, j].item(), ha="center", va="top", color='gray')
 plt.axis('off');
 
-plt.show()
+# plt.show()
