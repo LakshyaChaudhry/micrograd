@@ -64,3 +64,25 @@ for i in range(27):
 plt.axis('off');
 
 # plt.show()
+
+#Building out the alternative approach of using the NN framework to build the language model.
+xs, ys = [], []
+for w in words:
+    chs = ['.'] + list(w) + ['.']
+    for ch1, ch2 in zip(chs, chs[1:]):
+        ix1 = stoi[ch1]
+        ix2 = stoi[ch2]
+        xs.append(ix1)
+        ys.append(ix2)
+
+xs = torch.tensor(xs)
+ys = torch.tensor(ys)
+
+#use I-hat encoding here
+import torch.nn.functional as F
+xenc = F.one_hot(xs, num_classes=27).float()
+w = torch.randn((27, 27))
+
+logits = xenc @ w
+counts = logits.exp()
+probs = counts / counts.sum(1, keepdim=True)
